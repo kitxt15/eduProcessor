@@ -1,0 +1,15 @@
+asm:
+// TODO comments              DONE
+// TODO blank lines           DONE
+// TODO recur fibo            DONE
+
+proc:
+// TODO load func for some programs together done
+// TODO init doinit proc funcs
+// TODO print proc
+// TODO print addr + commands
+// TODO verify proc func DONE
+// TODO квадратка
+
+FEATURES::
+remove skips before command
