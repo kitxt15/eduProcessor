@@ -13,3 +13,7 @@ proc:
 
 FEATURES::
 remove skips before command
+
+
+NEW TODO
+SKIP BLANK LINES

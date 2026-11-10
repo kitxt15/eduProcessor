@@ -1,0 +1,51 @@
+PUSH 1
+PUSH -5
+PUSH 6
+POP c
+POP b
+POP a
+
+PUSH b
+PUSH -1
+MUL
+
+CALL :1
+
+SUB
+
+PUSH 2
+PUSH a
+
+MUL
+DIV
+OUT
+
+POP
+PUSH b
+PUSH -1
+MUL
+
+CALL :1
+
+ADD
+PUSH 2
+PUSH a
+
+MUL
+DIV
+OUT
+
+HLT
+
+:1
+PUSH b ; SQRT(D)
+PUSH b
+MUL
+PUSH 4
+PUSH a
+PUSH c
+MUL
+MUL
+SUB
+SQRT
+RET

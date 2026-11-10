@@ -1,0 +1,5 @@
+/Users/kitxt/eduVirtualMachine/build/CMakeFiles/assembler.dir
+/Users/kitxt/eduVirtualMachine/build/CMakeFiles/processor.dir
+/Users/kitxt/eduVirtualMachine/build/CMakeFiles/disassembler.dir
+/Users/kitxt/eduVirtualMachine/build/CMakeFiles/edit_cache.dir
+/Users/kitxt/eduVirtualMachine/build/CMakeFiles/rebuild_cache.dir

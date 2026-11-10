@@ -5,204 +5,193 @@
 #include "errno.h"
 #include "commands.h"
 #include "text.h"
-#define MAX_LENGTH  10*1000
+#define MAX_LENGTH 10 * 1000
 
 struct Label {
-    int id;
-    int address;
+    bool defined;
+    int  address;
 };
 
-int FindFlagPos(int argc, char* argv[]);
-int RemoveCommentsAndSkips(struct Line data[]);
-int WriteFile(const char* filename, struct Line data[], struct Label labels[]);
-void* BuffDup(char buffer[]);
+int   FindFlagPos(int argc, char *argv[]);
+int   RemoveCommentsAndSkips(struct Line data[]);
+int   WriteFile(const char *filename, struct Line data[], struct Label labels[]);
+void *BuffDup(char buffer[]);
 
-int FindFlagPos(int argc, char* argv[]){
-    for (int i = 0; i < argc; i++){
-        if (strcmp(argv[i], "-o") == 0){
+int FindFlagPos(int argc, char *argv[]) {
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "-o") == 0) {
             return i;
-        }
-        else {
+        } else {
             continue;
         }
     }
     return -1;
 }
 
-int RemoveCommentsAndSkips(struct Line data[]){
+int RemoveCommentsAndSkips(struct Line data[]) {
 
-    int count = 0;
-    int count_char = 0;
-    size_t len = 0;
+    for (int count = 0; data[count].buffer; count++) {
+        char *line = data[count].buffer;
+        char *com = strchr(line, ';');
+        if (com != nullptr) {
+            *com = '\0';
+        }
 
-    char* com = nullptr;
-    char* null = nullptr;
-    while (data[count].buffer != nullptr){
-
-          com = strchr(data[count].buffer, ';');
-          if ( com != nullptr){
-              *com = '\0';
-          }
-
-          null = strchr(data[count].buffer, '\0');
-          printf("OUTSIDE WHILE\n");
-          printf("*(null - count_char) = %c\n", *(null - count_char));
-          printf("strlen(data[count].buffer) - count_char = %zu\n", strlen(data[count].buffer) - count_char);
-          while (*(null - count_char - 1) == ' ' && strlen(data[count].buffer) - count_char > 0 ){
-              printf("INSIDE WHILE\n");
-              printf("*(null - count_char) = %c\n", *(null - count_char));
-              printf("strlen(data[count].buffer) - count_char = %zu\n", strlen(data[count].buffer) - count_char);
-              *(null - count_char -1) = '\0';
-              count_char++;
-          }
-
-          count++;
-          count_char = 0;
-      }
-      return 0;
+        size_t len = strlen(line);
+        while (len > 0 && line[len - 1] == ' ') {
+            line[--len] = '\0';
+        }
+    }
+    return 0;
 }
 
-
-int WriteFile(const char* filename, struct Line data[], struct Label labels[]) {
-
-    FILE* fp = fopen(filename, "w");
-
-    if (fp == NULL){ printf(RED "ERROR: Не удалось открыть файл \"%s\"!\n" RESET, filename); return -errno; }
-
-    int count = 0;
-    int char_count = 0;
-    int command_len = 0;
-    int check_buffer = 0;
-
-
-    int nEL_const=0;
-    int nEL_reg=0;
-    int nEL_jmp=0;
-
-    bool isArg = false;
-
-    char command = 0;
-    int arg = 0;
-    char reg = 0;
-
-
-    void* temp_ptr = calloc(64, 1);
-
-    while (data[count].buffer){
-        if (data[count].buffer[0] == ':'){
-            if (sscanf((char *)data[count].buffer + 1, "%d", &arg) == 1){
-                    labels[arg].id = arg;
-                    labels[arg].address = count;
-                    count++;
-                    continue;
-            }
-            else{count++;continue;}
-        }
-        count++;
+static int ReadOpcode(const char* line) {
+    char name[64];
+    if (sscanf(line, "%63s", name) != 1) {
+        return -1;
     }
 
-    count = 0;
-    while ( data[count].buffer ) {
+    if (strcmp(name, "PUSH") == 0) return PUSH_OP;
+    if (strcmp(name, "POP") == 0)  return POP_OP;
+    if (strcmp(name, "OUT") == 0)  return OUT_OP;
+    if (strcmp(name, "MEOW") == 0) return MEOW_OP;
+    if (strcmp(name, "meow") == 0) return MEOW_OP;
+    if (strcmp(name, "ADD") == 0)  return ADD_OP;
+    if (strcmp(name, "SUB") == 0)  return SUB_OP;
+    if (strcmp(name, "DIV") == 0)  return DIV_OP;
+    if (strcmp(name, "MUL") == 0)  return MUL_OP;
+    if (strcmp(name, "SQRT") == 0) return SQRT_OP;
+    if (strcmp(name, "JMP") == 0)  return JMP_OP;
+    if (strcmp(name, "JA") == 0)   return JA_OP;
+    if (strcmp(name, "JB") == 0)   return JB_OP;
+    if (strcmp(name, "JE") == 0)   return JE_OP;
+    if (strcmp(name, "JMPA") == 0) return JA_OP;
+    if (strcmp(name, "JMPE") == 0) return JE_OP;
+    if (strcmp(name, "NOP") == 0)  return NOP_OP;
+    if (strcmp(name, "CALL") == 0) return CALL_OP;
+    if (strcmp(name, "RET") == 0)  return RET_OP;
+    if (strcmp(name, "HLT") == 0)  return HLT_OP;
 
+    return -1;
+}
 
+int WriteFile(const char *filename, struct Line data[], struct Label labels[]) {
 
-        nEL_jmp = sscanf(data[count].buffer, "%s %c%d", (char *)temp_ptr, &reg, &arg);
-        printf("njmp: <%d>\n", nEL_jmp);
-
-        if (nEL_jmp != 3 || reg != ':'){
-            nEL_const = sscanf(data[count].buffer, "%s %d", (char *)temp_ptr, &arg);
-            nEL_reg = sscanf(data[count].buffer, "%s %c", (char *)temp_ptr, &reg);
-        }
-
-        printf("data[count].buffer is <%s>\n", data[count].buffer);
-        memcpy(&check_buffer, data[count].buffer, 4);
-        printf("another important info: %d and %d\n", check_buffer, ADD);
-
-        switch (check_buffer) {
-            case PUSH:
-                command = PUSH_OP;
-                break;
-            case POP:
-                command = POP_OP;
-            case POP2:
-                command = POP_OP;
-                break;
-            case OUT:
-                command = OUT_OP;
-                break;
-            case SUB:
-                command = SUB_OP;
-                break;
-            case ADD:
-                command = ADD_OP;
-                break;
-            case DIV:
-                command = DIV_OP;
-                break;
-            case MUL:
-                command = MUL_OP;
-                break;
-            case JMP:
-                command = JMP_OP;
-                break;
-            case JMPA:
-                command = JMPA_OP;
-                break;
-
-            case NOP:
-                command = NOP_OP;
-                break;
-
-            case CALL:
-                command = CALL_OP;
-                break;
-
-            case RET:
-                command = RET_OP;
-                break;
-
-
-            case HLT:
-                command = HLT_OP;
-                break;
-        }
-
-        fprintf(fp, "%d", command);
-
-        if(nEL_const == 2){
-            fprintf(fp, " %d", arg);
-        }
-        else if(nEL_reg == 2 && nEL_jmp != 3){
-            fprintf(fp, " %c", reg);
-        }
-        else if (nEL_jmp == 3){
-            if (labels[arg].address){
-                fprintf(fp, " %d", labels[arg].address+1);
+    int address = 0;
+    for (int count = 0; data[count].buffer; count++) {
+        int id = 0;
+        if (sscanf(data[count].buffer, " :%d", &id) == 1) {
+            if (id < 0 || id >= MAX_LENGTH) {
+                fprintf(stderr, "Неверный номер метки на строке %d: %d\n", count + 1, id);
+                return -1;
             }
+            labels[id].defined = true;
+            labels[id].address = address;
+        } else if (ReadOpcode(data[count].buffer) >= 0) {
+            address++;
         }
-        fputs("\n", fp);
-
-        command = NOP_OP;
-
-        count++;
-
-        //end
     }
 
-    // second iteration for labels -> future;
+    FILE *fp = fopen(filename, "wb");
 
-    fputs("\0", fp);
+    if (fp == NULL) {
+        printf(RED "ERROR: Не удалось открыть файл \"%s\"!\n" RESET, filename);
+        return -errno;
+    }
+
+    for (int count = 0; data[count].buffer; count++) {
+        const char* line = data[count].buffer;
+        int command = ReadOpcode(line);
+        if (command < 0) {
+            continue;
+        }
+
+        int  arg     = 0;
+        char reg     = '\0';
+        char closing = '\0';
+        int  address = 0;
+
+        int memory_fields = sscanf(line, "%*s [%d %c", &address, &closing);
+        int is_memory = memory_fields == 2 && closing == ']';
+
+        char memory_reg  = '\0';
+        char reg_closing = '\0';
+
+        int memory_reg_fields = sscanf(line, "%*s [ %c %c", &memory_reg, &reg_closing);
+        int is_memory_reg = memory_reg_fields == 2 && reg_closing == ']';
+
+        Command result = {};
+        result.command = command;
+
+        if (is_memory) {
+            result.arg = address;
+            if (command == PUSH_OP) {
+                result.command = PUSH_MEM_OP;
+            } else if (command == POP_OP) {
+                result.command = POP_MEM_OP;
+            } else {
+                fclose(fp);
+                return -1;
+            }
+        } else if (is_memory_reg) {
+
+            result.r = memory_reg;
+
+            if (command == PUSH_OP) {
+
+                result.command = PUSH_MEM_REG_OP;
+
+            } else if (command == POP_OP) {
+
+                result.command = POP_MEM_REG_OP;
+
+            } else {
+                fclose(fp);
+                return -1;
+            }
+        } else if (sscanf(line, "%*s :%d", &arg) == 1) {
+            if (arg < 0 || arg >= MAX_LENGTH || !labels[arg].defined) {
+                fprintf(stderr, "Неизвестная метка на строке %d: :%d\n", count + 1, arg);
+                fclose(fp);
+                return -1;
+            }
+            result.arg = labels[arg].address;
+
+        } else if (sscanf(line, "%*s %d", &arg) == 1) {
+            result.arg = arg;
+
+        } else if (command == JMP_OP || command == JA_OP || command == JB_OP ||
+                   command == JE_OP || command == CALL_OP) {
+            fprintf(stderr, "Ожидался адрес или метка на строке %d\n", count + 1);
+            fclose(fp);
+            return -1;
+
+        } else if (sscanf(line, "%*s %c", &reg) == 1) {
+
+            result.r = reg;
+
+            if (command == PUSH_OP) {
+                result.command = PUSHR_OP;
+            } else if (command == POP_OP) {
+                result.command = POPR_OP;
+            }
+        }
+
+        if (fwrite(&result, sizeof(result), 1, fp) != 1) {
+            fclose(fp);
+            return -1;
+        }
+    }
 
     fclose(fp);
     return 0;
 }
 
-
-void* BuffDup(char buffer[]){
+void *BuffDup(char buffer[]) {
 
     size_t row_len = strlen(buffer);
-    void* ptr = calloc(row_len+1, sizeof(char));
-    strcpy((char*)ptr, buffer);
+    void  *ptr     = calloc(row_len + 1, sizeof(char));
+    strcpy((char *)ptr, buffer);
 
     return ptr;
 }

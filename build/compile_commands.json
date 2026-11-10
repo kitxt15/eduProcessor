@@ -1,0 +1,26 @@
+[
+{
+  "directory": "/Users/kitxt/eduVirtualMachine/build",
+  "command": "/usr/bin/c++  -I/Users/kitxt/eduVirtualMachine  -arch arm64 -o CMakeFiles/assembler.dir/asm.cpp.o -c /Users/kitxt/eduVirtualMachine/asm.cpp",
+  "file": "/Users/kitxt/eduVirtualMachine/asm.cpp",
+  "output": "CMakeFiles/assembler.dir/asm.cpp.o"
+},
+{
+  "directory": "/Users/kitxt/eduVirtualMachine/build",
+  "command": "/usr/bin/c++ -DGRAPHICS_API_OPENGL_33 -DPLATFORM_DESKTOP -DUSE_LIBTYPE_SHARED -I/Users/kitxt/eduVirtualMachine -isystem /opt/homebrew/include  -arch arm64 -F/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk/System/Library/Frameworks  -o CMakeFiles/processor.dir/processor.cpp.o -c /Users/kitxt/eduVirtualMachine/processor.cpp",
+  "file": "/Users/kitxt/eduVirtualMachine/processor.cpp",
+  "output": "CMakeFiles/processor.dir/processor.cpp.o"
+},
+{
+  "directory": "/Users/kitxt/eduVirtualMachine/build",
+  "command": "/usr/bin/c++ -DGRAPHICS_API_OPENGL_33 -DPLATFORM_DESKTOP -DUSE_LIBTYPE_SHARED -I/Users/kitxt/eduVirtualMachine -isystem /opt/homebrew/include  -arch arm64 -F/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk/System/Library/Frameworks  -o CMakeFiles/processor.dir/video.cpp.o -c /Users/kitxt/eduVirtualMachine/video.cpp",
+  "file": "/Users/kitxt/eduVirtualMachine/video.cpp",
+  "output": "CMakeFiles/processor.dir/video.cpp.o"
+},
+{
+  "directory": "/Users/kitxt/eduVirtualMachine/build",
+  "command": "/usr/bin/cc  -I/Users/kitxt/eduVirtualMachine  -arch arm64 -o CMakeFiles/disassembler.dir/disasm.c.o -c /Users/kitxt/eduVirtualMachine/disasm.c",
+  "file": "/Users/kitxt/eduVirtualMachine/disasm.c",
+  "output": "CMakeFiles/disassembler.dir/disasm.c.o"
+}
+]

@@ -1,0 +1,31 @@
+PUSH 5
+CALL 5 ;
+OUT
+HLT ; FIBONACCI
+NOP ; begin of recur vall
+PUSH 0 ; check for 0
+JMPE 29
+POP
+PUSH 1 ; check for 1
+JMPE 29
+POP
+POP a
+PUSH a
+PUSH a
+PUSH 1
+SUB
+CALL 5 ; call for n-1
+POP b
+POP a
+PUSH b
+PUSH a
+PUSH 2
+SUB
+CALL 5 ; call for n-2
+ADD
+RET
+NOP
+NOP
+NOP
+POP ; check func for f(0) || f(1)
+RET
